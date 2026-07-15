@@ -1,0 +1,85 @@
+{
+  "Drills/End Mills": [
+    {
+      "id": "T01_SPOT",
+      "name": "1/2 Spot Drill",
+      "dia": 0.5,
+      "radius": 0.0,
+      "reach": 1.5,
+      "flute": 0.5,
+      "type": "Spot Drill"
+    },
+    {
+      "id": "T02_PILOT_08",
+      "name": "15/32 Pilot Drill (C08)",
+      "dia": 0.468,
+      "radius": 0.0,
+      "reach": 2.0,
+      "flute": 1.25,
+      "type": "Pilot Drill"
+    },
+    {
+      "id": "T03_PILOT_16",
+      "name": "63/64 Pilot Drill (C16)",
+      "dia": 0.984,
+      "radius": 0.0,
+      "reach": 5.0,
+      "flute": 4.25,
+      "type": "Pilot Drill"
+    },
+    {
+      "id": "T04_EM_STD",
+      "name": "1/2 Carbide End Mill",
+      "dia": 0.5,
+      "radius": 0.03,
+      "reach": 1.5,
+      "flute": 0.75,
+      "type": "End Mill"
+    },
+    {
+      "id": "T05_EM_DEEP",
+      "name": "3/8 Deep Port End Mill",
+      "dia": 0.375,
+      "radius": 0.01,
+      "reach": 4.5,
+      "flute": 0.5,
+      "type": "End Mill"
+    }
+  ],
+  "Taps": [
+    {
+      "id": "T06_TAP_16",
+      "name": "3/4-16 Tap",
+      "type": "Tap",
+      "tpi": 16,
+      "dia": 0.75,
+      "reach": 2.0,
+      "flute": 1.0,
+      "radius": 0.0
+    },
+    {
+      "id": "T07_TAP_12",
+      "name": "1-5/16-12 Tap",
+      "type": "Tap",
+      "tpi": 12,
+      "dia": 1.3125,
+      "reach": 2.5,
+      "flute": 1.25,
+      "radius": 0.0
+    }
+  ],
+  "Threadmills": [
+    {
+      "id": "T08_TM_GEN",
+      "name": "Threadmill",
+      "type": "Threadmill",
+      "dia": 0.29,
+      "radius": 0.0,
+      "reach": 1.5,
+      "flute": 0.75,
+      "cutter_dia": 0.29,
+      "tpi_min": 12.0,
+      "tpi_max": 12.0
+    }
+  ]
+}
