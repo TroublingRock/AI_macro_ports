@@ -1,0 +1,44 @@
+{
+  "Shop Test Ports": {
+    "SAE-8-Shop": {
+      "source": "SAE J1926-1 chart (INSERTA/Parker reference)",
+      "depth_mode": "from_seal_face",
+      "thread": "3/4-16",
+      "tpi": 16.0,
+      "major_dia": 0.75,
+      "minor_dia": 0.688,
+      "spotface_dia": 1.188,
+      "spotface_depth": 0.045,
+      "chart_spotface_max": 0.094,
+      "counterbore_dia": 0.811,
+      "full_thread_min": 0.562,
+      "tap_drill_depth": 0.688,
+      "port_depth": 0.718,
+      "chamfer_angle": 15.0,
+      "description": "",
+      "steps": [
+        {
+          "name": "Spotface",
+          "dia": 1.188,
+          "from_face": 0.0,
+          "angle": 90.0,
+          "is_spotface": true
+        },
+        {
+          "name": "O-ring seat",
+          "dia": 0.811,
+          "from_face": 0.391,
+          "angle": 15.0,
+          "is_spotface": false
+        },
+        {
+          "name": "Thread minor",
+          "dia": 0.688,
+          "from_face": 0.688,
+          "angle": 0.0,
+          "is_spotface": false
+        }
+      ]
+    }
+  }
+}
