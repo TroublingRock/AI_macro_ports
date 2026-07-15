@@ -733,19 +733,20 @@ BUILTIN_NAMES = set(STANDARDS.keys())
 
 
 def load_custom_standards() -> dict[str, dict[str, Any]]:
-    if not CUSTOM_STANDARDS_PATH.exists():
-        return {}
-    try:
-        with CUSTOM_STANDARDS_PATH.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError):
-        return {}
+    from github_persist import load_json
+
+    data = load_json(CUSTOM_STANDARDS_PATH, {})
+    return data if isinstance(data, dict) else {}
 
 
-def save_custom_standards(data: dict[str, dict[str, Any]]) -> None:
-    with CUSTOM_STANDARDS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+def save_custom_standards(data: dict[str, dict[str, Any]]) -> tuple[bool, str]:
+    from github_persist import save_json
+
+    return save_json(
+        CUSTOM_STANDARDS_PATH,
+        data,
+        message="Update custom_standards.json from AI Macro Ports",
+    )
 
 
 def all_standards() -> dict[str, dict[str, Any]]:
@@ -782,8 +783,10 @@ def create_standard_set(name: str) -> tuple[bool, str]:
     if name in data:
         return False, f"'{name}' already exists."
     data[name] = {}
-    save_custom_standards(data)
-    return True, f"Created standard set '{name}'."
+    ok, sync = save_custom_standards(data)
+    if not ok:
+        return False, sync
+    return True, f"Created standard set '{name}'. {sync}"
 
 
 def delete_standard_set(name: str) -> tuple[bool, str]:
@@ -793,8 +796,10 @@ def delete_standard_set(name: str) -> tuple[bool, str]:
     if name not in data:
         return False, "Standard set not found."
     del data[name]
-    save_custom_standards(data)
-    return True, f"Deleted '{name}'."
+    ok, sync = save_custom_standards(data)
+    if not ok:
+        return False, sync
+    return True, f"Deleted '{name}'. {sync}"
 
 
 def _cavity_snapshot(cavity: dict[str, Any]) -> dict[str, Any]:
@@ -850,8 +855,10 @@ def save_cavity_to_standard(
     if set_name not in data:
         data[set_name] = {}
     data[set_name][size_name] = _cavity_snapshot(cavity)
-    save_custom_standards(data)
-    return True, f"Saved '{size_name}' into '{set_name}'."
+    ok, sync = save_custom_standards(data)
+    if not ok:
+        return False, sync
+    return True, f"Saved '{size_name}' into '{set_name}'. {sync}"
 
 
 def override_key(standard: str, size: str) -> str:
@@ -859,26 +866,27 @@ def override_key(standard: str, size: str) -> str:
 
 
 def load_overrides() -> dict[str, Any]:
-    if not OVERRIDES_PATH.exists():
-        return {}
-    try:
-        with OVERRIDES_PATH.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError):
-        return {}
+    from github_persist import load_json
+
+    data = load_json(OVERRIDES_PATH, {})
+    return data if isinstance(data, dict) else {}
 
 
-def save_overrides(data: dict[str, Any]) -> None:
-    with OVERRIDES_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+def save_overrides(data: dict[str, Any]) -> tuple[bool, str]:
+    from github_persist import save_json
+
+    return save_json(
+        OVERRIDES_PATH,
+        data,
+        message="Update port_overrides.json from AI Macro Ports",
+    )
 
 
 def has_override(standard: str, size: str) -> bool:
     return override_key(standard, size) in load_overrides()
 
 
-def save_cavity_override(standard: str, size: str, cavity: dict[str, Any]) -> None:
+def save_cavity_override(standard: str, size: str, cavity: dict[str, Any]) -> tuple[bool, str]:
     """Persist face-referenced shop profile for this port (survives restarts)."""
     payload = {
         "spotface_depth": float(cavity.get("spotface_depth", SHOP_SPOTFACE_DEPTH)),
@@ -899,13 +907,13 @@ def save_cavity_override(standard: str, size: str, cavity: dict[str, Any]) -> No
         )
     data = load_overrides()
     data[override_key(standard, size)] = payload
-    save_overrides(data)
+    return save_overrides(data)
 
 
-def clear_cavity_override(standard: str, size: str) -> None:
+def clear_cavity_override(standard: str, size: str) -> tuple[bool, str]:
     data = load_overrides()
     data.pop(override_key(standard, size), None)
-    save_overrides(data)
+    return save_overrides(data)
 
 
 def _apply_override(cavity: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

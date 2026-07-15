@@ -1,11 +1,12 @@
-"""Local JSON tool library persistence."""
+"""Local JSON tool library persistence (optional GitHub sync on Cloud)."""
 
 from __future__ import annotations
 
-import json
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+
+from github_persist import load_json, save_json
 
 TOOLS_PATH = Path(__file__).resolve().parent / "tools.json"
 
@@ -111,22 +112,16 @@ def _ensure_structure(data: Any) -> dict[str, list[dict[str, Any]]]:
 
 
 def load_tools() -> dict[str, list[dict[str, Any]]]:
-    if not TOOLS_PATH.exists():
+    raw = load_json(TOOLS_PATH, None)
+    if raw is None:
         save_tools(DEFAULT_TOOLS)
         return deepcopy(DEFAULT_TOOLS)
-    try:
-        with TOOLS_PATH.open("r", encoding="utf-8") as f:
-            raw = json.load(f)
-        return _ensure_structure(raw)
-    except (json.JSONDecodeError, OSError):
-        save_tools(DEFAULT_TOOLS)
-        return deepcopy(DEFAULT_TOOLS)
+    return _ensure_structure(raw)
 
 
-def save_tools(tools: dict[str, list[dict[str, Any]]]) -> None:
+def save_tools(tools: dict[str, list[dict[str, Any]]]) -> tuple[bool, str]:
     cleaned = _ensure_structure(tools)
-    with TOOLS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(cleaned, f, indent=2)
+    return save_json(TOOLS_PATH, cleaned, message="Update tools.json from AI Macro Ports")
 
 
 def flatten_tools(tools: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:

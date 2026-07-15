@@ -29,6 +29,7 @@ from port_standards import (
     save_cavity_override,
     save_cavity_to_standard,
 )
+from github_persist import persist_enabled, persist_status
 from tool_store import (
     CATEGORIES,
     delete_tool,
@@ -300,6 +301,12 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+st.caption(persist_status())
+if not persist_enabled():
+    st.caption(
+        "On Streamlit Cloud, add GitHub secrets (see secrets.toml.example) so Saves "
+        "survive reboots."
+    )
 
 tab_lib, tab_gen = st.tabs(["Tool Library", "Port & Cavity"])
 
@@ -322,7 +329,10 @@ with tab_lib:
         st.info("No tools in this category yet. Add one below.")
 
     st.markdown("---")
-    st.caption("Edit or create — changes save to tools.json on this device/server.")
+    st.caption(
+        "Edit or create — saves tools.json"
+        + (" and syncs to GitHub." if persist_enabled() else " (local / until Cloud reboot).")
+    )
 
     with st.form("tool_form", clear_on_submit=False):
         default = selected or {}
@@ -410,15 +420,21 @@ with tab_lib:
                     payload["tpi_min"] = float(tpi_min)  # type: ignore[arg-type]
                     payload["tpi_max"] = float(tpi_max)  # type: ignore[arg-type]
                 st.session_state.tools = upsert_tool(st.session_state.tools, category, payload)
-                save_tools(st.session_state.tools)
-                st.success(f"Saved {payload['id']} to tools.json")
+                _ok, sync_msg = save_tools(st.session_state.tools)
+                if _ok:
+                    st.success(f"{payload['id']}: {sync_msg}")
+                else:
+                    st.error(sync_msg)
                 st.rerun()
 
     if selected and not st.session_state.get("_skip_delete"):
         if st.button("Delete selected tool", use_container_width=True):
             st.session_state.tools = delete_tool(st.session_state.tools, selected["id"])
-            save_tools(st.session_state.tools)
-            st.success(f"Deleted {selected['id']}")
+            _ok, sync_msg = save_tools(st.session_state.tools)
+            if _ok:
+                st.success(f"Deleted {selected['id']}. {sync_msg}")
+            else:
+                st.error(sync_msg)
             st.rerun()
 
     with st.expander("Preview tools.json"):
@@ -662,8 +678,11 @@ with tab_gen:
     b1, b2, b3 = st.columns(3)
     with b1:
         if st.button("Save override", use_container_width=True):
-            save_cavity_override(source_standard, size, cavity)
-            st.success(f"Saved override for {size}")
+            _ok, sync_msg = save_cavity_override(source_standard, size, cavity)
+            if _ok:
+                st.success(f"{size}: {sync_msg}")
+            else:
+                st.error(sync_msg)
             st.rerun()
     with b2:
         if st.button("Reset to defaults", use_container_width=True):
@@ -676,7 +695,9 @@ with tab_gen:
             st.rerun()
     with b3:
         if st.button("Clear saved / chart MAX SF", use_container_width=True):
-            clear_cavity_override(source_standard, size)
+            _ok, sync_msg = clear_cavity_override(source_standard, size)
+            if not _ok:
+                st.error(sync_msg)
             for k in list(st.session_state.keys()):
                 if isinstance(k, str) and k.startswith(geom_key):
                     st.session_state.pop(k, None)
